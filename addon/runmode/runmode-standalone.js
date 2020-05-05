@@ -1,7 +1,8 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: http://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/LICENSE
 
-window.CodeMirror = {};
+var root = typeof globalThis !== 'undefined' ? globalThis : window;
+root.CodeMirror = {};
 
 (function() {
 "use strict";
@@ -65,7 +66,8 @@ StringStream.prototype = {
     this.lineStart += n;
     try { return inner(); }
     finally { this.lineStart -= n; }
-  }
+  },
+  lookAhead: function() { return null }
 };
 CodeMirror.StringStream = StringStream;
 
@@ -103,14 +105,18 @@ CodeMirror.defineMIME("text/plain", "null");
 
 CodeMirror.runMode = function (string, modespec, callback, options) {
   var mode = CodeMirror.getMode({ indentUnit: 2 }, modespec);
+  var ie = /MSIE \d/.test(navigator.userAgent);
+  var ie_lt9 = ie && (document.documentMode == null || document.documentMode < 9);
 
-  if (callback.nodeType == 1) {
+  if (callback.appendChild) {
     var tabSize = (options && options.tabSize) || 4;
     var node = callback, col = 0;
     node.innerHTML = "";
     callback = function (text, style) {
       if (text == "\n") {
-        node.appendChild(document.createElement("br"));
+        // Emitting LF or CRLF on IE8 or earlier results in an incorrect display.
+        // Emitting a carriage return makes everything ok.
+        node.appendChild(document.createTextNode(ie_lt9 ? '\r' : text));
         col = 0;
         return;
       }
