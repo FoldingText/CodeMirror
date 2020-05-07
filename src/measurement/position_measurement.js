@@ -13,6 +13,17 @@ import { updateLineForChanges } from "../display/update_line.js"
 import { widgetHeight } from "./widgets.js"
 
 // POSITION MEASUREMENT
+// FT-CUSTOM
+export function spaceWidth(display) {
+  if (display.cachedSpaceWidth != null) return display.cachedSpaceWidth;
+  const anchor = elt("span", "          ");
+  const pre = elt("pre", [anchor]);
+  removeChildrenAndAdd(display.measure, pre);
+  const rect = anchor.getBoundingClientRect(), width = (rect.right - rect.left) / 10;
+  if (width > 2) display.cachedSpaceWidth = width;
+  return width || 10;
+}
+// END-FT-CUSTOM
 
 export function paddingTop(display) {return display.lineSpace.offsetTop}
 export function paddingVert(display) {return display.mover.offsetHeight - display.lineSpace.offsetHeight}
