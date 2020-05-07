@@ -32,8 +32,14 @@ export function maybeScrollWindow(cm, rect) {
 // Scroll a given position into view (immediately), verifying that
 // it actually became visible (as line heights are accurately
 // measured, the position of something may 'drift' during drawing).
-export function scrollPosIntoView(cm, pos, end, margin) {
-  if (margin == null) margin = 0
+
+// FT-CUSTOM NOTE: This method has changed from jesse's original modifications
+// for any scrolling issues, compare
+// FT-CUSTOM
+export function scrollPosIntoView(cm, pos, end, topMargin, bottomMargin) {
+  if (topMargin == null) topMargin = 0
+  if (bottomMargin == null) bottomMargin = 0
+// END-FT-CUSTOM
   let rect
   if (!cm.options.lineWrapping && pos == end) {
     // Set pos and end to the cursor positions around the character pos sticks to
@@ -47,9 +53,11 @@ export function scrollPosIntoView(cm, pos, end, margin) {
     let coords = cursorCoords(cm, pos)
     let endCoords = !end || end == pos ? coords : cursorCoords(cm, end)
     rect = {left: Math.min(coords.left, endCoords.left),
-            top: Math.min(coords.top, endCoords.top) - margin,
+            top: Math.min(coords.top, endCoords.top) - topMargin,
             right: Math.max(coords.left, endCoords.left),
-            bottom: Math.max(coords.bottom, endCoords.bottom) + margin}
+            // FT-CUSTOM
+            bottom: Math.max(coords.bottom, endCoords.bottom) + bottomMargin}
+            // END-FT-CUSTOM
     let scrollPos = calculateScrollPos(cm, rect)
     let startTop = cm.doc.scrollTop, startLeft = cm.doc.scrollLeft
     if (scrollPos.scrollTop != null) {
@@ -140,16 +148,20 @@ function resolveScrollToPos(cm) {
   if (range) {
     cm.curOp.scrollToPos = null
     let from = estimateCoords(cm, range.from), to = estimateCoords(cm, range.to)
-    scrollToCoordsRange(cm, from, to, range.margin)
+    // FT-CUSTOM
+    scrollToCoordsRange(cm, from, to, range.topMargin, range.bottomMargin)
+    // END-FT-CUSTOM
   }
 }
 
-export function scrollToCoordsRange(cm, from, to, margin) {
+// FT-CUSTOM
+export function scrollToCoordsRange(cm, from, to, topMargin, bottomMargin) {
+// END-FT-CUSTOM
   let sPos = calculateScrollPos(cm, {
     left: Math.min(from.left, to.left),
-    top: Math.min(from.top, to.top) - margin,
+    top: Math.min(from.top, to.top) - topMargin,
     right: Math.max(from.right, to.right),
-    bottom: Math.max(from.bottom, to.bottom) + margin
+    bottom: Math.max(from.bottom, to.bottom) + bottomMargin
   })
   scrollToCoords(cm, sPos.scrollLeft, sPos.scrollTop)
 }

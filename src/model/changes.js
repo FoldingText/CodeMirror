@@ -203,6 +203,12 @@ function makeChangeSingleDoc(doc, change, selAfter, spans) {
   else updateDoc(doc, change, spans)
   setSelectionNoUndo(doc, selAfter, sel_dontScroll)
 
+  // FT-CUSTOM
+  if (doc.cm && hasHandler(doc.cm, "justChanged")) {
+    signal(doc.cm, "justChanged", doc.cm, change);
+  }
+  // END-FT-CUSTOM
+
   if (doc.cantEdit && skipAtomic(doc, Pos(doc.firstLine(), 0)))
     doc.cantEdit = false
 }

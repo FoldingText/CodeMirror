@@ -65,7 +65,11 @@ function updateLineText(cm, lineView) {
   if (lineView.text == lineView.node) lineView.node = built.pre
   lineView.text.parentNode.replaceChild(built.pre, lineView.text)
   lineView.text = built.pre
-  if (built.bgClass != lineView.bgClass || built.textClass != lineView.textClass) {
+  // FT-CUSTOM
+  // if (built.bgClass != lineView.bgClass || built.textClass != lineView.textClass) {
+  if (built.wrapClass != lineView.wrapClass || built.bgClass != lineView.bgClass || built.textClass != lineView.textClass) { 
+    lineView.wrapClass = built.wrapClass;
+  // END-FT-CUSTOM
     lineView.bgClass = built.bgClass
     lineView.textClass = built.textClass
     updateLineClasses(cm, lineView)
@@ -76,8 +80,13 @@ function updateLineText(cm, lineView) {
 
 function updateLineClasses(cm, lineView) {
   updateLineBackground(cm, lineView)
-  if (lineView.line.wrapClass)
-    ensureLineWrapped(lineView).className = lineView.line.wrapClass
+  // FT-CUSTOM
+  // if (lineView.line.wrapClass)
+  //   ensureLineWrapped(lineView).className = lineView.line.wrapClass
+  let wrapClass = lineView.wrapClass ? lineView.wrapClass + " " + (lineView.line.wrapClass || "") : lineView.line.wrapClass; 
+  if (wrapClass)
+    ensureLineWrapped(lineView).className = wrappClass;
+  // END-FT-CUSTOM
   else if (lineView.node != lineView.text)
     lineView.node.className = ""
   let textClass = lineView.textClass ? lineView.textClass + " " + (lineView.line.textClass || "") : lineView.line.textClass
@@ -136,6 +145,9 @@ function updateLineWidgets(cm, lineView, dims) {
 export function buildLineElement(cm, lineView, lineN, dims) {
   let built = getLineContent(cm, lineView)
   lineView.text = lineView.node = built.pre
+  // FT-CUSTOM
+  if (built.wrapClass) lineView.wrapClass = built.wrapClass
+  // END-FT-CUSTOM
   if (built.bgClass) lineView.bgClass = built.bgClass
   if (built.textClass) lineView.textClass = built.textClass
 
@@ -148,28 +160,48 @@ export function buildLineElement(cm, lineView, lineN, dims) {
 // A lineView may contain multiple logical lines (when merged by
 // collapsed spans). The widgets for all of them need to be drawn.
 function insertLineWidgets(cm, lineView, dims) {
-  insertLineWidgetsFor(cm, lineView.line, lineView, dims, true)
+  // FT-CUSTOM
+  insertLineWidgetsFor(cm, lineView.line, lineView, dims, true, false)
+  // END-FT-CUSTOM
   if (lineView.rest) for (let i = 0; i < lineView.rest.length; i++)
-    insertLineWidgetsFor(cm, lineView.rest[i], lineView, dims, false)
+  // FT-CUSTOM
+    insertLineWidgetsFor(cm, lineView.rest[i], lineView, dims, false, true)
+  // END-FT-CUSTOM
 }
 
-function insertLineWidgetsFor(cm, line, lineView, dims, allowAbove) {
+// FT-CUSTOM
+function insertLineWidgetsFor(cm, line, lineView, dims, allowAbove, isHidden) {
+// END-FT-CUSTOM
   if (!line.widgets) return
   let wrap = ensureLineWrapped(lineView)
   for (let i = 0, ws = line.widgets; i < ws.length; ++i) {
-    let widget = ws[i], node = elt("div", [widget.node], "CodeMirror-linewidget" + (widget.className ? " " + widget.className : ""))
+    // FT-CUSTOM
+    let widget = ws[i];
+    if (isHidden && !widget.showIfHidden)
+      continue;
+      
+    let node = elt("div", [widget.node], "CodeMirror-linewidget" + (widget.className ? " " + widget.className : ""))
+    // END-FT-CUSTOM
     if (!widget.handleMouseEvents) node.setAttribute("cm-ignore-events", "true")
-    positionLineWidget(widget, node, lineView, dims)
+    // FT-CUSTOM
+    positionLineWidget(cm, widget, node, lineView, dims)
+    // END-FT-CUSTOM
     cm.display.input.setUneditable(node)
     if (allowAbove && widget.above)
       wrap.insertBefore(node, lineView.gutter || lineView.text)
-    else
+    // FT-CUSTOM
+    else if (widget.overlay) {
+      wrap.insertBefore(node, lineView.text);
+    } else
+    // END-FT-CUSTOM
       wrap.appendChild(node)
     signalLater(widget, "redraw")
   }
 }
 
-function positionLineWidget(widget, node, lineView, dims) {
+// FT-CUSTOM
+function positionLineWidget(cm, widget, node, lineView, dims) {
+// END-FT-CUSTOM
   if (widget.noHScroll) {
     ;(lineView.alignable || (lineView.alignable = [])).push(node)
     let width = dims.wrapperWidth
@@ -185,4 +217,13 @@ function positionLineWidget(widget, node, lineView, dims) {
     node.style.position = "relative"
     if (!widget.noHScroll) node.style.marginLeft = -dims.gutterTotalWidth + "px"
   }
+  // FT-CUSTOM
+  if (widget.overlay) {
+    node.style.position = 'absolute';
+  }
+  if (widget.positionWidget && cm.display.positionLineWidgets) cm.display.positionLineWidgets.push({
+    widget: widget,
+    node: node
+  });
+  // END-FT-CUSTOM
 }

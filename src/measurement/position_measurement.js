@@ -205,8 +205,19 @@ function measureCharInner(cm, prepared, ch, bias) {
       while (place.coverStart + end < place.coverEnd && isExtendingChar(prepared.line.text.charAt(place.coverStart + end))) ++end
       if (ie && ie_version < 9 && start == 0 && end == place.coverEnd - place.coverStart)
         rect = node.parentNode.getBoundingClientRect()
-      else
+      else {
         rect = getUsefulRect(range(node, start, end).getClientRects(), bias)
+        // FT-CUSTOM
+        // Note: This code has changed significantly from 5.12.1, do we need the below?
+        if (rect.width === 0) {
+          let rects = range(node, start, end).getClientRects();
+          if (rects.length)
+            rect = rects[bias == "right" ? rects.length - 1 : 0];
+          else
+            rect = nullRect;
+        }
+        // END-FT-CUSTOM
+      }
       if (rect.left || rect.right || start == 0) break
       end = start
       start = start - 1
@@ -241,6 +252,14 @@ function measureCharInner(cm, prepared, ch, bias) {
                 top: top, bottom: bot}
   if (!rect.left && !rect.right) result.bogus = true
   if (!cm.options.singleCursorHeightPerLine) { result.rtop = rtop; result.rbottom = rbot }
+  // FT-CUSTOM
+  let left = prepared.view.text.offsetLeft;
+  if (left) {
+    // hack so that possible to set margins in renderline
+    result.left += left;
+    result.right += left;
+  }
+  // END-FT-CUSTOM
 
   return result
 }
@@ -275,7 +294,10 @@ export function clearLineMeasurementCache(cm) {
 
 export function clearCaches(cm) {
   clearLineMeasurementCache(cm)
-  cm.display.cachedCharWidth = cm.display.cachedTextHeight = cm.display.cachedPaddingH = null
+  // FT-CUSTOM
+  // cm.display.cachedCharWidth = cm.display.cachedTextHeight = cm.display.cachedPaddingH = null
+  cm.display.cachedCharWidth = cm.display.cachedSpaceWidth = cm.display.cachedTextHeight = cm.display.cachedPaddingH = null;
+  // END-FT-CUSTOM
   if (!cm.options.lineWrapping) cm.display.maxLineChanged = true
   cm.display.lineNumChars = null
 }

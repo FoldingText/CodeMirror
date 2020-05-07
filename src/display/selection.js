@@ -127,18 +127,43 @@ function drawSelectionRange(cm, range, output) {
     let fromLine = getLine(doc, sFrom.line), toLine = getLine(doc, sTo.line)
     let singleVLine = visualLine(fromLine) == visualLine(toLine)
     let leftEnd = drawForLine(sFrom.line, sFrom.ch, singleVLine ? fromLine.text.length + 1 : null).end
-    let rightStart = drawForLine(sTo.line, singleVLine ? 0 : null, sTo.ch).start
-    if (singleVLine) {
-      if (leftEnd.top < rightStart.top - 2) {
-        add(leftEnd.right, leftEnd.top, null, leftEnd.bottom)
-        add(leftSide, rightStart.top, rightStart.left, rightStart.bottom)
-      } else {
-        add(leftEnd.right, leftEnd.top, rightStart.left - leftEnd.right, leftEnd.bottom)
+    // FT-CUSTOM
+    let fromArg = singleVLine ? 0 : null;
+    let toArg = sTo.ch;
+    let rightStart;
+    
+    if (fromArg === null && toArg === 0) {
+      rightStart = charCoords(cm, Pos(sTo.line, sTo.ch), "div");
+    } else {
+      let rightStart = drawForLine(sTo.line, singleVLine ? 0 : null, sTo.ch).start
+      if (singleVLine) {
+        if (leftEnd.top < rightStart.top - 2) {
+          add(leftEnd.right, leftEnd.top, null, leftEnd.bottom)
+          add(leftSide, rightStart.top, rightStart.left, rightStart.bottom)
+        } else {
+          add(leftEnd.right, leftEnd.top, rightStart.left - leftEnd.right, leftEnd.bottom)
+        }
       }
+    // END-FT-CUSTOM
     }
     if (leftEnd.bottom < rightStart.top)
       add(leftSide, leftEnd.bottom, null, rightStart.top)
   }
+  // FT-CUSTOM (Disabled)
+  //Progress on drawing selection rects.
+  //It's fast enough, but reported in wrong coord system.
+  /*var fragment = document.createDocumentFragment();
+  for (var i = 0; i < display.view.length; i++) {
+    var cur = display.view[i];
+    var offsetTop = 0;//cur.text.offsetTop;
+    var offsetLeft = 0;//cur.text.offsetLeft;
+    var rects = cur.text.firstChild.getClientRects();
+    for (var j = 0; j < rects.length; j++) {
+      var r = rects[j];
+      add(r.left - offsetLeft, r.top - offsetTop, r.width, r.bottom - offsetTop);
+    }
+  }*/
+  // END-FT-CUSTOM
 
   output.appendChild(fragment)
 }

@@ -24,6 +24,9 @@ export class DisplayUpdate {
     this.viewport = viewport
     // Store some values that we'll need later (but don't want to force a relayout for)
     this.visible = visibleLines(display, cm.doc, viewport)
+    // FT-CUSTOM
+    this.positionLineWidgets = display.positionLineWidgets = [];
+    // END-FT-CUSTOM
     this.editorIsHidden = !display.wrapper.offsetWidth
     this.wrapperHeight = display.wrapper.clientHeight
     this.wrapperWidth = display.wrapper.clientWidth
@@ -154,6 +157,34 @@ export function updateDisplayIfNeeded(cm, update) {
     display.lastWrapWidth = update.wrapperWidth
     startWorker(cm, 400)
   }
+
+  // FT-CUSTOM
+  // calc positions in on step to avoid relayouts
+  var positionedWidgets = [], widgetWrapper;
+  var positionLineWidgets = display.positionLineWidgets || [];
+
+  for (var i = 0; i < positionLineWidgets.length; i++) {
+    widgetWrapper = positionLineWidgets[i].widget.node.parentNode;
+    positionedWidgets.push({
+      widgetWrapper: widgetWrapper,
+      position: positionLineWidgets[i].widget.positionWidget(widgetWrapper.offsetWidth, widgetWrapper.offsetHeight)
+    });
+  }
+
+  // apply positions in next step
+  for (var i = 0; i < positionedWidgets.length; i++) {
+    var position = positionedWidgets[i].position;
+    widgetWrapper = positionedWidgets[i].widgetWrapper;
+    if (position.top) widgetWrapper.style.top = position.top;
+    if (position.bottom) widgetWrapper.style.bottom = position.bottom;
+    if (position.left) widgetWrapper.style.left = position.left;
+    if (position.right) widgetWrapper.style.right = position.right;
+    if (position.marginLeft) widgetWrapper.style.marginLeft = position.marginLeft;
+    if (position.marginRight) widgetWrapper.style.marginRight = position.marginRight;
+  }
+
+  display.positionLineWidgets = null;
+  // END-FT-CUSTOM
 
   display.updateLineNumbers = null
 

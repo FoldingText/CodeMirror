@@ -43,6 +43,9 @@ export function startOperation(cm) {
 
 // Finish an operation, updating the display and signalling delayed events
 export function endOperation(cm) {
+  // FT-CUSTOM
+  signal(cm, "willEndOperation", cm)
+  // END-FT-CUSTOM
   let op = cm.curOp
   if (op) finishOperation(op, group => {
     for (let i = 0; i < group.ops.length; i++)
@@ -145,8 +148,13 @@ function endOperation_finish(op) {
   if (op.scrollLeft != null) setScrollLeft(cm, op.scrollLeft, true, true)
   // If we need to scroll a specific position into view, do so.
   if (op.scrollToPos) {
+    // FT-CUSTOM
+    // let rect = scrollPosIntoView(cm, clipPos(doc, op.scrollToPos.from),
+    //                              clipPos(doc, op.scrollToPos.to), op.scrollToPos.margin)
     let rect = scrollPosIntoView(cm, clipPos(doc, op.scrollToPos.from),
-                                 clipPos(doc, op.scrollToPos.to), op.scrollToPos.margin)
+                                 clipPos(doc, op.scrollToPos.to), 
+                                 op.scrollToPos.topMargin, op.scrollToPos.bottomMargin)
+    // END-FT-CUSTOM
     maybeScrollWindow(cm, rect)
   }
 

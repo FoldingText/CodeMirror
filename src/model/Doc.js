@@ -334,6 +334,47 @@ Doc.prototype = createObj(BranchChunk.prototype, {
     })
     return found
   },
+  // FT-CUSTOM
+  findMarksInRange: function(from, to) {
+    if (!to) to = from;
+    from = clipPos(this, from);
+    to = clipPos(this, to);
+    let markers = [], lineNum = from.line;
+
+    this.iter(from.line, to.line + 1, (line) => {
+      const spans = line.markedSpans;
+      if (spans) {
+        for (let i = 0; i < spans.length; ++i) {
+          const span = spans[i];
+          let fromOverlap = false;
+          let toOverlap = false;
+
+          if (to.line === lineNum) {
+            fromOverlap = span.from == null || span.from <= to.ch;
+          } else {
+            fromOverlap = true;
+          }
+
+          if (from.line === lineNum) {
+            toOverlap = span.to == null || span.to >= from.ch;
+          } else {
+            toOverlap = true;
+          }
+
+          if (fromOverlap && toOverlap) {
+            const marker = span.marker.parent || span.marker;
+            if (markers.indexOf(marker) === -1) {
+              markers.push(marker);
+            }
+          }
+        }
+      }
+      lineNum++;
+    });
+    return markers;
+  },
+
+  // END-FT-CUSTOM
   getAllMarks: function() {
     let markers = []
     this.iter(line => {

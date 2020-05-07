@@ -25,9 +25,16 @@ export function onDrop(e) {
   if (ie) lastDrop = +new Date
   let pos = posFromMouse(cm, e, true), files = e.dataTransfer.files
   if (!pos || cm.isReadOnly()) return
+  // FT-CUSTOM
+  let textForDropEvent = null;
+  if (cm.options.textForDropEvent) {
+    textforDropEvent = cm.options.textForDropEvent(e)
+  }
+
   // Might be a file drop, in which case we simply extract the text
   // and insert it.
-  if (files && files.length && window.FileReader && window.File) {
+  if (textForDropEvent === null && files && files.length && window.FileReader && window.File) {
+  // END-FT-CUSTOM
     let n = files.length, text = Array(n), read = 0
     const markAsReadAndPasteIfAllFilesAreRead = () => {
       if (++read == n) {
@@ -36,7 +43,10 @@ export function onDrop(e) {
           let change = {from: pos, to: pos,
                         text: cm.doc.splitLines(
                             text.filter(t => t != null).join(cm.doc.lineSeparator())),
-                        origin: "paste"}
+                            // FT-CUSTOM
+                        // origin: "paste"}
+                        origin: "+paste"}
+                        // END-FT-CUSTOM
           makeChange(cm.doc, change)
           setSelectionReplaceHistory(cm.doc, simpleSelection(clipPos(cm.doc, pos), clipPos(cm.doc, changeEnd(change))))
         })()
@@ -71,15 +81,29 @@ export function onDrop(e) {
       return
     }
     try {
-      let text = e.dataTransfer.getData("Text")
-      if (text) {
+      // FT-CUSTOM
+      let text = textForDropEvent
+        ? textForDropEvent
+        : e.dataTransfer.getData("Text");
+      // END-FT-CUSTOM
+      if (text) 
         let selected
         if (cm.state.draggingText && !cm.state.draggingText.copy)
           selected = cm.listSelections()
         setSelectionNoUndo(cm.doc, simpleSelection(pos, pos))
-        if (selected) for (let i = 0; i < selected.length; ++i)
-          replaceRange(cm.doc, "", selected[i].anchor, selected[i].head, "drag")
-        cm.replaceSelection(text, "around", "paste")
+        // FT-CUSTOM
+        // if (selected) for (let i = 0; i < selected.length; ++i)
+        //   replaceRange(cm.doc, "", selected[i].anchor, selected[i].head, "drag")
+        // cm.replaceSelection(text, "around", "paste")
+        if (!textForDropEvent) {
+          if (selected) {
+            for (let i = 0; i < selected.length; ++i) {
+              replaceRange(cm.doc, "", selected[i].anchor, selected[i].head, "drag");
+            }
+          }
+        }
+        cm.replaceSelection(text, "around", "+paste");
+        // END-FT-CUSTOM
         cm.display.input.focus()
       }
     }

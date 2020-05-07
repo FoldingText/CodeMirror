@@ -3,6 +3,9 @@ import { e_target } from "../util/event.js"
 
 export function widgetHeight(widget) {
   if (widget.height != null) return widget.height
+  // FT-CUSTOM
+  if (widget.overlay) return widget.height = 0;
+  // END-FT-CUSTOM
   let cm = widget.doc.cm
   if (!cm) return 0
   if (!contains(document.body, widget.node)) {

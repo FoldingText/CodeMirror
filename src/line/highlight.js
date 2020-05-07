@@ -65,8 +65,18 @@ export function highlightLine(cm, line, context, forceToEnd) {
   // mode/overlays that it is based on (for easy invalidation).
   let st = [cm.state.modeGen], lineClasses = {}
   // Compute the base array of styles
-  runMode(cm, line.text, cm.doc.mode, context, (end, style) => st.push(end, style),
-          lineClasses, forceToEnd)
+  // FT-CUSTOM
+  // runMode(cm, line.text, cm.doc.mode, context, (end, style) => st.push(end, style),
+  //         lineClasses, forceToEnd)
+  const externalMode = cm.getOption('externalMode');
+  if (externalMode) {
+    const externalStyles = externalMode(cm, line);
+    st = st.concat(externalStyles);
+  } else {
+    runMode(cm, line.text, cm.doc.mode, context, (end, style) => st.push(end, style),
+            lineClasses, forceToEnd)
+  }
+  // END-FT-CUSTOM
   let state = context.state
 
   // Run overlays, adjust style array.

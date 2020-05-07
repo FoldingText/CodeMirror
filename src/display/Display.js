@@ -83,7 +83,10 @@ export function Display(place, doc, input, options) {
   // this is false.
   d.alignWidgets = false
 
-  d.cachedCharWidth = d.cachedTextHeight = d.cachedPaddingH = null
+  // FT-CUSTOM
+  // d.cachedCharWidth = d.cachedTextHeight = d.cachedPaddingH = null
+  d.cachedCharWidth = d.cachedSpaceWidth = d.cachedTextHeight = d.cachedPaddingH = null;
+  // END-FT-CUSTOM
 
   // Tracks the maximum line length so that the horizontal scrollbar
   // can be kept static when scrolling.

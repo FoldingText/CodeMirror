@@ -111,7 +111,10 @@ export function buildLineContent(cm, lineView) {
       builder.content.className = "cm-tab-wrap-hack"
   }
 
-  signal(cm, "renderLine", cm, lineView.line, builder.pre)
+  // FT-CUSTOM
+  // signal(cm, "renderLine", cm, lineView.line, builder.pre)
+  signal(cm, "renderLine", cm, lineView.line, builder.pre, builder, lineView.measure);
+  // END-FT-CUSTOM
   if (builder.pre.className)
     builder.textClass = joinClasses(builder.pre.className, builder.textClass || "")
 
@@ -249,6 +252,7 @@ function buildCollapsedSpan(builder, size, marker, ignoreWidget) {
 // and marked text into account.
 function insertLineContent(line, builder, styles) {
   let spans = line.markedSpans, allText = line.text, at = 0
+  // FT-CUSTOM NOTE: In 5.12, there was a commented out AttributedString code here. Look at diff.
   if (!spans) {
     for (let i = 1; i < styles.length; i+=2)
       builder.addToken(builder, allText.slice(at, at = styles[i]), interpretTokenStyle(styles[i+1], builder.cm.options))

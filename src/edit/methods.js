@@ -16,7 +16,7 @@ import { charCoords, charWidth, clearCaches, clearLineMeasurementCache, coordsCh
 import { Range } from "../model/selection.js"
 import { replaceOneSelection, skipAtomic } from "../model/selection_updates.js"
 import { addToScrollTop, ensureCursorVisible, scrollIntoView, scrollToCoords, scrollToCoordsRange, scrollToRange } from "../display/scrolling.js"
-import { heightAtLine } from "../line/spans.js"
+import { heightAtLine, lineIsHidden } from "../line/spans.js"
 import { updateGutterSpace } from "../display/update_display.js"
 import { indexOf, insertSorted, isWordChar, sel_dontScroll, sel_move } from "../util/misc.js"
 import { signalLater } from "../util/operation_group.js"
@@ -218,6 +218,10 @@ export default function(CodeMirror) {
 
     defaultTextHeight: function() { return textHeight(this.display) },
     defaultCharWidth: function() { return charWidth(this.display) },
+    // FT-CUSTOM
+    defaultSpaceWidth: function() { return spaceWidth(this.display); },
+    // END-FT-CUSTOM
+    
 
     getViewport: function() { return {from: this.display.viewFrom, to: this.display.viewTo}},
 
@@ -370,22 +374,30 @@ export default function(CodeMirror) {
               clientHeight: displayHeight(this), clientWidth: displayWidth(this)}
     },
 
-    scrollIntoView: methodOp(function(range, margin) {
+    // FT-CUSTOM
+    scrollIntoView: methodOp(function(range, topMargin, bottomMargin) {
+    // END-FT-CUSTOM
       if (range == null) {
         range = {from: this.doc.sel.primary().head, to: null}
-        if (margin == null) margin = this.options.cursorScrollMargin
+        if (topMargin == null) topMargin = this.options.cursorScrollMargin
       } else if (typeof range == "number") {
         range = {from: Pos(range, 0), to: null}
       } else if (range.from == null) {
         range = {from: range, to: null}
       }
       if (!range.to) range.to = range.from
-      range.margin = margin || 0
+      // FT-CUSTOM
+      // range.margin = topMargin || 0
+      range.topMargin = topMargin || 0;
+      range.bottomMargin = bottomMargin === undefined? range.topMargin : bottomMargin;
+      // END-FT-CUSTOM
 
       if (range.from.line != null) {
         scrollToRange(this, range)
       } else {
-        scrollToCoordsRange(this, range.from, range.to, range.margin)
+        // FT-CUSTOM
+        scrollToCoordsRange(this, range.from, range.to, range.topMargin, range.bottomMargin)
+        // FT-CUSTOM
       }
     }),
 
@@ -419,6 +431,16 @@ export default function(CodeMirror) {
         estimateLineHeights(this)
       signal(this, "refresh", this)
     }),
+
+    // FT-CUSTOM
+    regLineChange: function(line, type) {
+      regLineChange(this, line, type)
+    },
+
+    lineHandleIsHidden: function(lineHandle) {
+      return lineIsHidden(this, lineHandle);
+    },
+    // END-FT-CUSTOM
 
     swapDoc: methodOp(function(doc) {
       let old = this.doc

@@ -46,14 +46,21 @@ export default class TextareaInput {
     })
 
     on(te, "paste", e => {
-      if (signalDOMEvent(cm, e) || handlePaste(e, cm)) return
+      // FT-CUSTOM
+      // if (signalDOMEvent(cm, e) || handlePaste(e, cm)) return
+      if (signalDOMEvent(cm, e) || eventInWidget(cm.display, e)) return
+      if (handlePaste(e, cm)) return true;
+      // END-FT-CUSTOM
 
       cm.state.pasteIncoming = +new Date
       input.fastPoll()
     })
 
     function prepareCopyCut(e) {
-      if (signalDOMEvent(cm, e)) return
+      // FT-CUSTOM
+      // if (signalDOMEvent(cm, e)) return
+      if (signalDOMEvent(cm, e) || eventInWidget(d, e)) return;
+      // END-FT-CUSTOM
       if (cm.somethingSelected()) {
         setLastCopied({lineWise: false, text: cm.getSelections()})
       } else if (!cm.options.lineWiseCopyCut) {
@@ -75,7 +82,10 @@ export default class TextareaInput {
     on(te, "copy", prepareCopyCut)
 
     on(display.scroller, "paste", e => {
-      if (eventInWidget(display, e) || signalDOMEvent(cm, e)) return
+      // FT-CUSTOM
+      // if (eventInWidget(display, e) || signalDOMEvent(cm, e)) return
+      if (signalDOMEvent(cm, e) || eventInWidget(display, e)) return;
+      // END-FT-CUSTOM
       if (!te.dispatchEvent) {
         cm.state.pasteIncoming = +new Date
         input.focus()
@@ -94,6 +104,9 @@ export default class TextareaInput {
     })
 
     on(te, "compositionstart", () => {
+      // FT-CUSTOM
+      cm.options.moveInputWithCursor = true;
+      // END-FT-CUSTOM
       let start = cm.getCursor("from")
       if (input.composing) input.composing.range.clear()
       input.composing = {
@@ -106,6 +119,9 @@ export default class TextareaInput {
         input.poll()
         input.composing.range.clear()
         input.composing = null
+        // FT-CUSTOM
+        cm.options.moveInputWithCursor = false;
+        // END-FT-CUSTOM
       }
     })
   }
@@ -288,7 +304,10 @@ export default class TextareaInput {
     // Reset the current text selection only if the click is done outside of the selection
     // and 'resetSelectionOnContextMenu' option is true.
     let reset = cm.options.resetSelectionOnContextMenu
-    if (reset && cm.doc.sel.contains(pos) == -1)
+    // FT-CUSTOM
+    // if (reset && cm.doc.sel.contains(pos) == -1)
+    if (reset && (!cm.doc.somethingSelected() || cm.doc.sel.contains(pos) == -1)
+    // END-FT-CUSTOM
       operation(cm, setSelection)(cm.doc, simpleSelection(pos), sel_dontScroll)
 
     let oldCSS = te.style.cssText, oldWrapperCSS = input.wrapper.style.cssText

@@ -3,34 +3,46 @@ import { getLine, lineAtHeight, updateLineHeight } from "../line/utils_line.js"
 import { paddingTop, charWidth } from "../measurement/position_measurement.js"
 import { ie, ie_version } from "../util/browser.js"
 
+// FT-CUSTOM
+function updateHeightInViewport(cm, view, height) {
+  const display = cm.display;
+  const diff = view.line.height - height;
+  if (height < 2) height = textHeight(display);
+  if (diff > .005 || diff < -.005) {
+    updateLineHeight(view.line, height);
+    updateWidgetHeight(view.line);
+    if (view.rest) for (let j = 0; j < view.rest.length; j++)
+      updateWidgetHeight(view.rest[j]);
+  }
+}
+// END-FT-CUSTOM
+
+
 // Read the actual heights of the rendered lines, and update their
 // stored heights to match.
 export function updateHeightsInViewport(cm) {
   let display = cm.display
   let prevBottom = display.lineDiv.offsetTop
+  // FT-CUSTOM
+  let prev;
   for (let i = 0; i < display.view.length; i++) {
-    let cur = display.view[i], wrapping = cm.options.lineWrapping
-    let height, width = 0
+    let cur = display.view[i]
+    let width = 0
     if (cur.hidden) continue
-    if (ie && ie_version < 8) {
-      let bot = cur.node.offsetTop + cur.node.offsetHeight
-      height = bot - prevBottom
-      prevBottom = bot
-    } else {
-      let box = cur.node.getBoundingClientRect()
-      height = box.bottom - box.top
-      // Check that lines don't extend past the right of the current
-      // editor width
-      if (!wrapping && cur.text.firstChild)
-        width = cur.text.firstChild.getBoundingClientRect().right - box.left - 1
+    const offsetTop = cur.node.offsetTop;
+    const offsetHeight = cur.node.offsetHeight;
+    const offsetBottom = offsetTop + offsetHeight;
+    const gap = (offsetTop - prevBottom);
+    if (gap) {
+      updateHeightInViewport(cm, prev, prev.line.height + gap);
     }
-    let diff = cur.line.height - height
-    if (diff > .005 || diff < -.005) {
-      updateLineHeight(cur.line, height)
-      updateWidgetHeight(cur.line)
-      if (cur.rest) for (let j = 0; j < cur.rest.length; j++)
-        updateWidgetHeight(cur.rest[j])
-    }
+
+    updateHeightInViewport(cm, cur, offsetHeight);
+    prevBottom = offsetBottom;
+    prevHeight = offsetHeight;
+    prev = cur;
+    // END-FT-CUSTOM
+
     if (width > cm.display.sizerWidth) {
       let chWidth = Math.ceil(width / charWidth(cm.display))
       if (chWidth > cm.display.maxLineLength) {
@@ -45,10 +57,21 @@ export function updateHeightsInViewport(cm) {
 // Read and store the height of line widgets associated with the
 // given line.
 function updateWidgetHeight(line) {
+  // FT-CUSTOM
+  // if (line.widgets) for (let i = 0; i < line.widgets.length; ++i) {
+  //   let w = line.widgets[i], parent = w.node.parentNode
+  //   if (parent) w.height = parent.offsetHeight
+  // }
+
   if (line.widgets) for (let i = 0; i < line.widgets.length; ++i) {
-    let w = line.widgets[i], parent = w.node.parentNode
-    if (parent) w.height = parent.offsetHeight
+    var each = line.widgets[i];
+    if (each.overlay) {
+      each.height = 0;
+    } else {
+      each.height = each.node.offsetHeight;
+    }
   }
+  // END-FT-CUSTOM
 }
 
 // Compute the lines that are visible in a given viewport (defaults
