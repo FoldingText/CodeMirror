@@ -39,7 +39,6 @@ export function updateHeightsInViewport(cm) {
 
     updateHeightInViewport(cm, cur, offsetHeight);
     prevBottom = offsetBottom;
-    prevHeight = offsetHeight;
     prev = cur;
     // END-FT-CUSTOM
 

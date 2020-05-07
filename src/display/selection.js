@@ -135,7 +135,7 @@ function drawSelectionRange(cm, range, output) {
     if (fromArg === null && toArg === 0) {
       rightStart = charCoords(cm, Pos(sTo.line, sTo.ch), "div");
     } else {
-      let rightStart = drawForLine(sTo.line, singleVLine ? 0 : null, sTo.ch).start
+      rightStart = drawForLine(sTo.line, singleVLine ? 0 : null, sTo.ch).start
       if (singleVLine) {
         if (leftEnd.top < rightStart.top - 2) {
           add(leftEnd.right, leftEnd.top, null, leftEnd.bottom)

@@ -85,7 +85,7 @@ function updateLineClasses(cm, lineView) {
   //   ensureLineWrapped(lineView).className = lineView.line.wrapClass
   let wrapClass = lineView.wrapClass ? lineView.wrapClass + " " + (lineView.line.wrapClass || "") : lineView.line.wrapClass; 
   if (wrapClass)
-    ensureLineWrapped(lineView).className = wrappClass;
+    ensureLineWrapped(lineView).className = wrapClass;
   // END-FT-CUSTOM
   else if (lineView.node != lineView.text)
     lineView.node.className = ""
