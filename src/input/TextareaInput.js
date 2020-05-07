@@ -306,7 +306,7 @@ export default class TextareaInput {
     let reset = cm.options.resetSelectionOnContextMenu
     // FT-CUSTOM
     // if (reset && cm.doc.sel.contains(pos) == -1)
-    if (reset && (!cm.doc.somethingSelected() || cm.doc.sel.contains(pos) == -1)
+    if (reset && (!cm.doc.somethingSelected() || cm.doc.sel.contains(pos) == -1))
     // END-FT-CUSTOM
       operation(cm, setSelection)(cm.doc, simpleSelection(pos), sel_dontScroll)
 

@@ -86,8 +86,8 @@ export function onDrop(e) {
         ? textForDropEvent
         : e.dataTransfer.getData("Text");
       // END-FT-CUSTOM
-      if (text) 
-        let selected
+      if (text) {
+        let selected;
         if (cm.state.draggingText && !cm.state.draggingText.copy)
           selected = cm.listSelections()
         setSelectionNoUndo(cm.doc, simpleSelection(pos, pos))
