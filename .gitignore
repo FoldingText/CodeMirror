@@ -1,11 +1,11 @@
 /node_modules
 /npm-debug.log
+/package-lock.json
 /test*.html
 .tern-*
 .DS_Store
 *~
 *.swp
-=======
 .idea
 *.iml
->>>>>>> codemirror/master
+/lib/codemirror.js
