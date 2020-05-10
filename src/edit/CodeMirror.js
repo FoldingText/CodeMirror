@@ -12,7 +12,10 @@ import Doc from "../model/Doc.js"
 import { attachDoc } from "../model/document_data.js"
 import { Range } from "../model/selection.js"
 import { extendSelection } from "../model/selection_updates.js"
-import { ie, ie_version, mobile, webkit } from "../util/browser.js"
+// FT-CUSTOM
+// import { ie, ie_version, mobile, webkit } from "../util/browser.js"
+import { ie, ie_version, mobile, webkit, mac, windows } from "../util/browser.js"
+// END-FT-CUSTOM
 import { e_preventDefault, e_stop, on, signal, signalDOMEvent } from "../util/event.js"
 import { bind, copyObj, Delayed } from "../util/misc.js"
 
@@ -97,6 +100,12 @@ export function CodeMirror(place, options) {
 CodeMirror.defaults = defaults
 // Functions to run when options are changed.
 CodeMirror.optionHandlers = optionHandlers
+
+// FT-CUSTOM
+CodeMirror.mobile = mobile;
+CodeMirror.mac = mac;
+CodeMirror.windows = windows;
+// END-FT-CUSTOM
 
 export default CodeMirror
 
