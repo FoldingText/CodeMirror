@@ -26,10 +26,7 @@ export function onDrop(e) {
   let pos = posFromMouse(cm, e, true), files = e.dataTransfer.files
   if (!pos || cm.isReadOnly()) return
   // FT-CUSTOM
-  let textForDropEvent = null;
-  if (cm.options.textForDropEvent) {
-    textforDropEvent = cm.options.textForDropEvent(e)
-  }
+  let textForDropEvent = cm.options.textforDropEvent ? cm.options.textForDropEvent(e) : null;
 
   // Might be a file drop, in which case we simply extract the text
   // and insert it.

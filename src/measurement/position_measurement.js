@@ -17,7 +17,7 @@ import { widgetHeight } from "./widgets.js"
 export function spaceWidth(display) {
   if (display.cachedSpaceWidth != null) return display.cachedSpaceWidth;
   const anchor = elt("span", "          ");
-  const pre = elt("pre", [anchor]);
+  const pre = elt("pre", [anchor], "CodeMirror-line-like");
   removeChildrenAndAdd(display.measure, pre);
   const rect = anchor.getBoundingClientRect(), width = (rect.right - rect.left) / 10;
   if (width > 2) display.cachedSpaceWidth = width;
@@ -638,7 +638,7 @@ export function textHeight(display) {
 export function charWidth(display) {
   if (display.cachedCharWidth != null) return display.cachedCharWidth
   let anchor = elt("span", "xxxxxxxxxx")
-  let pre = elt("pre", [anchor], "CodeMirror-line-like")
+  let pre = elt("pre", [anchor])
   removeChildrenAndAdd(display.measure, pre)
   let rect = anchor.getBoundingClientRect(), width = (rect.right - rect.left) / 10
   if (width > 2) display.cachedCharWidth = width
