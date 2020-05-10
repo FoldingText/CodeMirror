@@ -89,7 +89,6 @@
   50% { background-color: transparent; }
   100% {}
 }
-
 /* Can style cursor different in overwrite (non-insert) mode */
 .CodeMirror-overwrite .CodeMirror-cursor {}
 

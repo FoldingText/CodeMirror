@@ -3,6 +3,7 @@
 /package-lock.json
 /test*.html
 .tern-*
+.DS_Store
 *~
 *.swp
 .idea
